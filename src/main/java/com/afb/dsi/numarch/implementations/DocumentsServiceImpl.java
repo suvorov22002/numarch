@@ -6,8 +6,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -50,6 +53,7 @@ import com.afb.dsi.numarch.repository.PropertiesRepository;
 import com.afb.dsi.numarch.repository.ProprietesRepository;
 import com.afb.dsi.numarch.services.IDocumentsService;
 import com.afb.dsi.numarch.services.ITypeDocumentsService;
+import com.afb.dsi.numarch.tools.DateUtil;
 
 @Service("documentsservice")
 @Transactional
@@ -195,23 +199,24 @@ public class DocumentsServiceImpl implements IDocumentsService {
 		String serverCrUrl; // Url creation doddier
 		RestTemplate restTemplate;
 		String year = "",month = "";
-	
+		
 		//serverUrl  = "http://192.168.11.36:8889/alfresco-contents/save-aps-content";
 		serverUrl = AppInitializator.params.get("urlAcs").getValeur();
 		serverCrUrl = AppInitializator.params.get("urlCrAcs").getValeur();
-		
+		                                                    
 		String default_aspect = "cm:titled;afbm:internalDoc;afbm:transaction;afbm:unit;afbm:nameComponent";
-		Map<String, String> propriete = new HashMap<String, String>();
+		//Map<String, String> propriete = new HashMap<String, String>();
 		try {                                                                                                                                                                                              
 			// Recuperation de toutes les proprites et valeur du document
 			String proprietes = docx.getProprietes();
 			String[] _proprie = proprietes.split("/");
-			logger.info("_proprie: "+proprietes);
+			Collections.reverse(Arrays.asList(_proprie)); 
+			logger.info("_proprie: "+Arrays.asList(_proprie));
 		 if (_proprie.length > 6) {
 			for(String p : _proprie) {
-				propriete.put(p.split(";")[0], p.split(";")[1]);  //propriete + valeur
+				//propriete.put(p.split(";")[0], p.split(";")[1]);  //propriete + valeur
 				
-				if (p.split(";")[0].equals("afbm:trxDate") || p.split(";")[0].equals("afbm:prodDate")) {
+				if ("afbm:trxDate".equals(p.split(";")[0]) || "afbm:prodDate".equals(p.split(";")[0])) {
 					
 					try {
 						String dd = p.split(";")[1];
@@ -225,13 +230,16 @@ public class DocumentsServiceImpl implements IDocumentsService {
 							DateFormat format = new SimpleDateFormat("dd/MM/yyyy");
 							date = format.parse(convDate);
 						}
-						else {
-							date = new Date(dd);
+						else if (DateUtil.validDate(dd)) {
+							date = Date.from(DateUtil.parse(dd).atStartOfDay(ZoneId.systemDefault()).toInstant());
 							Calendar calendar = Calendar.getInstance();
 							calendar.setTime(date);
 							year = ""+calendar.get(Calendar.YEAR);
 							month = ""+calendar.get(Calendar.MONTH);
 							logger.info("convDateTest: "+year+" --- "+month);
+						}
+						else {
+							date = new Date(dd);
 						}
 						
 						metadata.put(p.split(";")[0], date);
@@ -240,7 +248,7 @@ public class DocumentsServiceImpl implements IDocumentsService {
 					}
 					
 				}
-				else if (p.split(";")[0].equals("afbm:trxAmount")) {
+				else if ("afbm:trxAmount".equals(p.split(";")[0])) {
 					try {
 						metadata.put(p.split(";")[0], Double.parseDouble(p.split(";")[1]));
 					}
@@ -268,7 +276,7 @@ public class DocumentsServiceImpl implements IDocumentsService {
 			return null;
 		}
 			
-			
+		 
 			
 			// Recherche des proprietes des aspects.
 //			TypeDocuments typdoc = typedocservice.findByName(docx.getName());
@@ -343,19 +351,39 @@ public class DocumentsServiceImpl implements IDocumentsService {
 				
 				data.put("dateKeys", "");
 			}
+			else if("REPRISE".equals(docx.getCateg())) {
+				
+				varia = new JSONObject();
+				
+				if (metadata.has("afbm:trxUser")) {
+					reper = (String) metadata.get("afbm:trxUser");
+				}
+				else {
+					reper = "AUTO";
+				}
+				
+				varia.put("folderType", "afbm:transferFolder");
+				varia.put("rootPath", "/Sites/afriland/documentLibrary");
+				varia.put("folderName", reper);
+				varia.put("aspects", "afbm:transfer");
+				varia.put("destPath", "/afb_numarch_reprises/journeeComptables/"+year+'/'+mois[Integer.parseInt(month)-1]);
+				
+				destfolder = destfolder + "/afb_numarch_reprises/journeeComptables/"+year+'/'+mois[Integer.parseInt(month)-1];
+				
+				data.put("dateKeys", "afbm:trxDate");
+			}
 			
 			
 			
 			//MultiValueMap<String, String> varia = new LinkedMultiValueMap<>();
-			
-			
-			
+				
 			HttpHeaders head = new HttpHeaders();
 			head.setContentType(MediaType.APPLICATION_JSON);
 			restTemplate = new RestTemplate();
 			HttpEntity<String> reqEntity = new HttpEntity<String>(varia.toString(), head);
 			JSONObject folderID = restTemplate.postForObject(serverCrUrl, reqEntity, JSONObject.class);
 			
+			System.out.println("folderID: "+folderID);
 			
 			
 			data.put("fileName", "numarch_"+docx.getReference());
@@ -364,7 +392,7 @@ public class DocumentsServiceImpl implements IDocumentsService {
 			data.put("aspects", default_aspect);
 			//data.put("folderId", "afb_numarch");
 		
-			//logger.info("----------------type:", docx.getName());
+			logger.info("----------------type: "+docx.getName());
 			data.put("type", docx.getName());
 			
 			//cm:titled
@@ -391,7 +419,6 @@ public class DocumentsServiceImpl implements IDocumentsService {
 
 				is = new FileInputStream(file);//Convertir document en inputstream
 				 
-		
 			    contentsAsResource = new ByteArrayResource(IOUtils.toByteArray(is)) {
 			        @Override
 			        public String getFilename() {
@@ -400,7 +427,6 @@ public class DocumentsServiceImpl implements IDocumentsService {
 			    };
 			    is.close();
 			} catch (IOException e) {
-			    // TODO Auto-generated catch block
 			    e.printStackTrace();
 			   
 			    return null;
@@ -408,12 +434,14 @@ public class DocumentsServiceImpl implements IDocumentsService {
 			
 			body.set("file", contentsAsResource);
 			HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
-
-
+			
+			System.out.println("Envoi vers le serveur***********************************************");
+			System.out.println("serverUrl: "+serverUrl);
+			System.out.println("destPath: "+destfolder+'/'+reper);
 			restTemplate = new RestTemplate();
 			String lienDoc = restTemplate.postForEntity(serverUrl, requestEntity, String.class).getBody();
 			
-		//	System.out.println("lienDoc: "+lienDoc);
+			System.out.println("lienDoc: "+lienDoc);
 			docx.setUrl(lienDoc);
 			docx.setBase64Str("");
 			

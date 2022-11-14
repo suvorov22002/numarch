@@ -19,7 +19,7 @@ import com.afb.dsi.numarch.services.IDocumentsService;
 import com.afb.dsi.numarch.services.IProprietesService;
 
 
-//@Component
+@Component
 public class ScheduledTasks {
 	
 	final static Logger logger = LoggerFactory.getLogger(ScheduledTasks.class);
@@ -33,6 +33,13 @@ public class ScheduledTasks {
 	@Autowired
 	private IProprietesService proprieteservice;
 	
+	
+	/**
+	 * 	seconds minutes hours day-of-month month day-of-week
+           0       0      8        *         *        ?
+	 * */
+	
+	@Scheduled(cron = "0 */5 * ? * *")
 	//@Scheduled(fixedDelayString = "${my.property.fixed.delay.seconds:60}000", initialDelay = 10000)
 	public void scheduleTaskFixedDelay(){
 		logger.info("scheduleTaskFixedDelay executed at {}", LocalDateTime.now());

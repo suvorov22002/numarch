@@ -9,14 +9,10 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Base64;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
-import org.codehaus.jettison.json.JSONArray;
-import org.codehaus.jettison.json.JSONException;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,7 +37,6 @@ import com.afb.dsi.numarch.AppInitializator;
 import com.afb.dsi.numarch.dtos.DocumentsDTO;
 import com.afb.dsi.numarch.dtos.NumArchUtils;
 import com.afb.dsi.numarch.entities.Documents;
-import com.afb.dsi.numarch.entities.Params;
 import com.afb.dsi.numarch.entities.Proprietes;
 import com.afb.dsi.numarch.entities.ResponseData;
 import com.afb.dsi.numarch.entities.Transaction;
@@ -797,7 +792,7 @@ public static final Logger logger = LoggerFactory.getLogger(DocumentsController.
 		        
 				resp_doc.setTraiter(Boolean.TRUE);
 				
-				logger.info("Document ref: "+resp_doc.getReference());
+				logger.info("Document ref: "+resp_doc.getReference()+" Name: "+resp_doc.getName());
 				Documents docx = NumArchUtils.mapDocumentsDTOToDocuments(resp_doc);
 				
 				

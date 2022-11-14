@@ -28,7 +28,6 @@
 		<start-class>com.afb.dsi.numarch.NumarchApplication</start-class>
 	</properties>
 	
-	
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -47,7 +46,7 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-actuator</artifactId>
 		</dependency>
-		
+	<!--  	
 		<dependency>
 			<groupId>org.springframework.cloud</groupId>
 			<artifactId>spring-cloud-starter-bootstrap</artifactId>
@@ -73,6 +72,8 @@
 			<groupId>org.springframework.cloud</groupId>
 			<artifactId>spring-cloud-starter-sleuth</artifactId>
 		</dependency>
+	
+  -->
 		<dependency>
 			<groupId>de.codecentric</groupId>
 			<artifactId>spring-boot-admin-starter-client</artifactId>
@@ -188,10 +189,10 @@
 		</dependency>
 	
 		<dependency>
-	         <groupId>com.afb.dsi.ddil</groupId>
+	        <groupId>com.afriland</groupId>
 	         <artifactId>scanToAlfresco</artifactId>
-	         <version>1.0.4</version>
-	  <!--         <systemPath>${basedir}\src\lib\scanToAlfresco-1.0.0.jar</systemPath>
+	         <version>1.0.5</version>
+	       <!--     <systemPath>${basedir}\src\lib\scanToAlfresco-1.0.0.jar</systemPath>
 	          <scope>system</scope>-->
       	</dependency>
 	</dependencies>

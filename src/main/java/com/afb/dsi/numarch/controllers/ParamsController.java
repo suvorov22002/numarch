@@ -13,23 +13,24 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.afb.dsi.numarch.dtos.NumArchUtils;
 import com.afb.dsi.numarch.dtos.ParamsDTO;
-import com.afb.dsi.numarch.dtos.ParentDTO;
 import com.afb.dsi.numarch.dtos.PropertiesDTO;
 import com.afb.dsi.numarch.entities.Params;
-import com.afb.dsi.numarch.entities.Parent;
 import com.afb.dsi.numarch.services.IParamsService;
-import com.afb.dsi.numarch.services.IParentService;
+import com.afb.dsi.numarch.tools.AutoWorker;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @CrossOrigin
 @RestController
 @RequestMapping("/rest/api/numarch/params")
@@ -92,7 +93,6 @@ public class ParamsController {
 	})
 	public ResponseEntity<List<ParamsDTO>> getAlls() {
 		//, UriComponentsBuilder uriComponentBuilder
-
 		List<Params> params = paramservice.getAllParams();
 		if (params != null && !CollectionUtils.isEmpty(params)) {
 			List<ParamsDTO> paramsDTO = params.stream().map(param -> {
@@ -101,6 +101,43 @@ public class ParamsController {
 			return new ResponseEntity<List<ParamsDTO>>(paramsDTO, HttpStatus.OK);
 		}
 		return new ResponseEntity<List<ParamsDTO>>(HttpStatus.NO_CONTENT);
+	}
+	
+
+	/**
+	 * Ajouter un nouveau Type Evidence dans la BD. Si la propriete existe déjà, on
+	retourne un reference indiquant que la création n'a pas abouti.
+	 * @param typeproprieteDTORequest
+	 * @return
+	 */
+	@PutMapping("/edit")
+	@ApiOperation(value = "Mise à jour d'un params", response = ParamsDTO.class)
+	@ApiResponses(value = { @ApiResponse(code = 409, message = "Conflit: le params existe deja"),
+			@ApiResponse(code = 201, message = "cree : le params ete enregistre avec succes"),
+			@ApiResponse(code = 304, message = "Erreur : le params n'a pa ete cree") })
+	public ResponseEntity<ParamsDTO> updateNew(@RequestBody ParamsDTO
+			paramsDTORequest) {
+		return paramservice.editParams(paramsDTORequest);
+	}
+	
+	@GetMapping("/robot/{info}")
+	@ApiOperation(value="Obtenir plusieurs types Properties", response = String.class)
+	public  ResponseEntity<ParamsDTO> getRobot(@PathVariable("info") String info) {
+		log.info("Manage robot: "+info);
+		ParamsDTO p = new ParamsDTO();
+		p.setCodeResponse("200");
+		p.setError("");
+	
+		if("ON".equalsIgnoreCase(info)) {
+			AutoWorker.initChecking();
+			p.setMessage("Robot lancé");
+			return new ResponseEntity<ParamsDTO>(p, HttpStatus.OK);
+		}
+		else if ("OFF".equalsIgnoreCase(info)) {
+			p.setMessage("Robot arreté");
+			AutoWorker.cancelChecking();
+		}
+		return new ResponseEntity<ParamsDTO>(p, HttpStatus.OK);
 	}
 	
 }

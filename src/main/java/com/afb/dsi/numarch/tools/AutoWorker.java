@@ -15,12 +15,16 @@ import org.apache.commons.lang3.time.DateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Configurable;
 
 import com.afb.dsi.numarch.dtos.DocumentsDTO;
 import com.afb.dsi.numarch.dtos.NumArchUtils;
 import com.afb.dsi.numarch.entities.Documents;
 import com.afb.dsi.numarch.entities.Params;
 import com.afb.dsi.numarch.entities.Proprietes;
+import com.afb.dsi.numarch.implementations.DocumentsServiceImpl;
+import com.afb.dsi.numarch.implementations.ParamsServiceImpl;
+import com.afb.dsi.numarch.implementations.ProprietesServiceImpl;
 import com.afb.dsi.numarch.services.IDocumentsService;
 import com.afb.dsi.numarch.services.IParamsService;
 import com.afb.dsi.numarch.services.IProprietesService;
@@ -29,6 +33,7 @@ import com.afb.dsi.numarch.services.IProprietesService;
  * @author rodrigue_toukam
  *
  */
+
 public class AutoWorker {
 	
 	private static TimerTask task;
@@ -42,15 +47,16 @@ public class AutoWorker {
 	private static DocumentsDTO documentDto;
 	private static File file;
 			
-	@Autowired
+	
 	private static IDocumentsService documentservice;
-	
-	@Autowired
 	private static IProprietesService proprieteservice;
-	
-	@Autowired
 	private static IParamsService paramservice;
 	
+	public AutoWorker() {
+		documentservice = new DocumentsServiceImpl();
+		proprieteservice = new ProprietesServiceImpl();
+		paramservice = new ParamsServiceImpl();
+	}
 	
 	public static void initChecking(){
 		
@@ -116,6 +122,7 @@ public class AutoWorker {
 	
 	public static void process(){
 		
+		logger.info("process");
 		documentDto = new DocumentsDTO();
 		documentDto.setTraiter(false);
 		ldocx = new ArrayList<Documents>();

@@ -13,6 +13,8 @@ public interface IParamsService {
 	
 	public ResponseEntity<ParamsDTO> saveParams(ParamsDTO ParamsDTORequest);
 	
+	public ResponseEntity<ParamsDTO> editParams(ParamsDTO ParamsDTORequest);
+	
 	public List<Params> saveListParams(List<Params> params);
 	
 	public List<Params> getAllParams();

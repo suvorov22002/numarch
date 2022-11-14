@@ -22,13 +22,15 @@ public class AppInitializator {
 	@Autowired
 	IParamsService paramservice;
 	
+	private AutoWorker autoworker;
+	
 	private List<Params> parameter;
 	public static Map<String, Params> params = new HashMap<String, Params>(); 
 	public static final Logger logger = LoggerFactory.getLogger(PropertiesController.class);
 	
 	@PostConstruct
 	public void loadConfig() {
-
+		
 		logger.info("******************** Initialisation des parametres ********************");
 		parameter = paramservice.getAllParams();
 		for(Params p : parameter) {
@@ -36,20 +38,20 @@ public class AppInitializator {
 			params.put(p.getCode(), p);
 		}
 		
-		if (params.containsKey("ROBOT")) {
-			
-			if ("ON".equals(params.get("ROBOT").getValeur())) {
-				logger.info("Lancement Robot");
-				AutoWorker.initChecking();
-			}
-			else {
-				AutoWorker.cancelChecking();
-			}
-			
-		}
-		else {
-			AutoWorker.cancelChecking();
-		}
+//		if (params.containsKey("ROBOT")) {
+//			
+//			if ("ON".equals(params.get("ROBOT").getValeur())) {
+//				logger.info("Lancement Robot");
+//				AutoWorker.initChecking();
+//			}
+//			else {
+//				AutoWorker.cancelChecking();
+//			}
+//			
+//		}
+//		else {
+//			AutoWorker.cancelChecking();
+//		}
 		
 	}
 }
